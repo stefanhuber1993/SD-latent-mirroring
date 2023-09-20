@@ -16,7 +16,7 @@ class Script(scripts.Script):
     def ui(self, is_img2img):
         with gr.Group():
             with gr.Accordion("Latent Mirroring", open=False):
-                mirror_mode = gr.Radio(label='Latent Mirror mode', choices=['None', 'Alternate Steps', 'Blend Average'], value='None', type="index")
+                mirror_mode = gr.Radio(label='Latent Mirror mode', choices=['None', 'Alternate Steps', 'Blend Average', 'Impose'], value='None', type="index")
                 mirror_style = gr.Radio(label='Latent Mirror style', choices=['Horizontal Mirroring', 'Vertical Mirroring', 'Horizontal+Vertical Mirroring', '90 Degree Rotation', '180 Degree Rotation', 'Roll Channels', 'None'], value='Horizontal Mirroring', type="index")
 
                 with gr.Row():
@@ -75,6 +75,44 @@ class Script(scripts.Script):
                     params.x[:, :, :, :] = (torch.rot90(torch.rot90(params.x, dims=[2, 3]), dims=[2, 3]) + params.x)/2
                 elif self.mirror_style == 5:
                     params.x[:, :, :, :] = (torch.roll(params.x, shifts=1, dims=[1]) + params.x)/2
+
+            input_image = params.x
+            elif self.mirror_mode == 3:
+                if self.mirror_style == 0:
+                    left_half = input_image[:, :, :, :input_image.size(3) // 2]
+                    right_half = torch.flip(left_half, [3])
+                    params.x[:, :, :, :] = torch.cat((left_half, right_half), dim=3)
+                elif self.mirror_style == 1:
+                    top_half = input_image[:, :, :input_image.size(2) // 2, :]
+                    bottom_half = torch.flip(top_half, [2])
+                    params.x[:, :, :, :] = torch.cat((top_half, bottom_half), dim=2)
+                elif self.mirror_style == 2:
+                    height, width = input_image.size(2), input_image.size(3)
+                    top_left = input_image[:, :, :height // 2, :width // 2]
+                    top_right = torch.flip(top_left, [3])  # Flip horizontally
+                    bottom_left = torch.flip(top_left, [2])  # Flip vertically
+                    bottom_right = torch.flip(bottom_left, [3])  # Flip horizontally and vertically
+                    top_half = torch.cat((top_left, top_right), dim=3)
+                    bottom_half = torch.cat((bottom_left, bottom_right), dim=3)
+                    params.x[:, :, :, :] =  torch.cat((top_half, bottom_half), dim=2)
+                elif self.mirror_style == 3:
+                    height, width = input_image.size(2), input_image.size(3)
+                    top_left = input_image[:, :, :height // 2, :width // 2]
+                    rotated_top_left = torch.rot90(top_left, k=1, dims=(2, 3))
+                    top_right = torch.flip(rotated_top_left, [2])  # Flip horizontally
+                    bottom_left = torch.flip(rotated_top_left, [3])  # Flip vertically
+                    bottom_right = torch.flip(bottom_left, [2])  # Flip horizontally
+                    top_half = torch.cat((rotated_top_left, top_right), dim=3)
+                    bottom_half = torch.cat((bottom_left, bottom_right), dim=3)
+                    params.x[:, :, :, :] = torch.cat((top_half, bottom_half), dim=2)
+                elif self.mirror_style == 4:
+                    height, width = input_image.size(2), input_image.size(3)
+                    top_half = input_image[:, :, :height // 2, :]
+                    rotated_top_half = torch.flip(top_half, [2, 3])  # Flip both vertically and horizontally
+                    params.x[:, :, :, :] = torch.cat((rotated_top_half, input_image[:, :, height // 2:, :]), dim=2)
+                elif self.mirror_style == 5:
+                    params.x[:, :, :, :] = (torch.roll(params.x, shifts=1, dims=[1]) + params.x)/2
+                    
         except RuntimeError as e:
             if self.mirror_style in (3, 4):
                 raise RuntimeError('90 Degree Rotation requires a square image.') from e
