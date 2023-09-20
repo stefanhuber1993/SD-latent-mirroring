@@ -76,8 +76,9 @@ class Script(scripts.Script):
                 elif self.mirror_style == 5:
                     params.x[:, :, :, :] = (torch.roll(params.x, shifts=1, dims=[1]) + params.x)/2
 
-            input_image = params.x
+            
             elif self.mirror_mode == 3:
+                input_image = params.x
                 if self.mirror_style == 0:
                     left_half = input_image[:, :, :, :input_image.size(3) // 2]
                     right_half = torch.flip(left_half, [3])
