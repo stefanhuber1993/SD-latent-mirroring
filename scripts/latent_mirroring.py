@@ -130,7 +130,7 @@ class Script(scripts.Script):
              params.x[:, :, :, :] = torch.roll(params.x, shifts=int(params.x.size()[2]*self.y_pan), dims=[2])
 
 
-    def process(self, p, mirror_mode, mirror_style, x_pan, y_pan, mirroring_max_step_fraction, disable_hr):
+    def process(self, p, mirror_mode, mirror_style, x_pan, y_pan, mirroring_fractions, disable_hr):
         self.mirror_mode = mirror_mode
         self.mirror_style = mirror_style
         self.mirroring_fractions = np.fromstring(mirroring_fractions, dtype=float, sep=',')
@@ -140,7 +140,7 @@ class Script(scripts.Script):
         if mirror_mode != 0:
             p.extra_generation_params["Mirror Mode"] = mirror_mode
             p.extra_generation_params["Mirror Style"] = mirror_style
-            p.extra_generation_params["Mirroring Max Step Fraction"] = mirroring_max_step_fraction
+            p.extra_generation_params["Mirroring Fractions"] = np.fromstring(mirroring_fractions, dtype=float, sep=',')
         if x_pan != 0:
             p.extra_generation_params["X Pan"] = x_pan
         if y_pan != 0:
