@@ -140,7 +140,7 @@ class Script(scripts.Script):
         if mirror_mode != 0:
             p.extra_generation_params["Mirror Mode"] = mirror_mode
             p.extra_generation_params["Mirror Style"] = mirror_style
-            p.extra_generation_params["Mirroring Fractions"] = np.fromstring(mirroring_fractions, dtype=float, sep=',')
+            p.extra_generation_params["Mirroring Fractions"] = mirroring_fractions
         if x_pan != 0:
             p.extra_generation_params["X Pan"] = x_pan
         if y_pan != 0:
