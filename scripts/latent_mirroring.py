@@ -48,7 +48,7 @@ class Script(scripts.Script):
         #if params.sampling_step >= params.total_sampling_steps * self.mirroring_max_step_fraction:
          #   return
         mirroring_its = np.round(self.mirroring_fractions).astype(int)
-        if params.sampling_step not in self.mirroring_its:
+        if params.sampling_step not in mirroring_its:
             return
 
         try:
