@@ -23,7 +23,7 @@ class Script(scripts.Script):
                     x_pan = gr.Slider(minimum=-1.0, maximum=1.0, step=0.01, label='X panning', value=0.0)
                     y_pan = gr.Slider(minimum=-1.0, maximum=1.0, step=0.01, label='Y panning', value=0.0)
 
-                mirroring_max_step_fraction = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='Maximum steps fraction to mirror at', value=0.25)
+                mirroring_fractions = gr.Textbox(label='List of what fractions (of iterations) to symmetrise in', value='0.1')
 
                 if not is_img2img:
                     disable_hr = gr.Checkbox(label='Disable during hires pass', value=False)
@@ -31,7 +31,7 @@ class Script(scripts.Script):
                     disable_hr = gr.State(False)
 
         self.run_callback = False
-        return [mirror_mode, mirror_style, x_pan, y_pan, mirroring_max_step_fraction, disable_hr]
+        return [mirror_mode, mirror_style, x_pan, y_pan, mirroring_fractions, disable_hr]
 
     def denoise_callback(self, params):
         is_hires = self.is_hires
@@ -44,7 +44,10 @@ class Script(scripts.Script):
         if not self.run_callback or is_hires:
             return
 
-        if params.sampling_step >= params.total_sampling_steps * self.mirroring_max_step_fraction:
+        #if params.sampling_step >= params.total_sampling_steps * self.mirroring_max_step_fraction:
+         #   return
+        mirroring_its = np.round(self.mirroring_fractions).astype(int)
+        if params.sampling_step not in self.mirroring_its:
             return
 
         try:
@@ -129,7 +132,7 @@ class Script(scripts.Script):
     def process(self, p, mirror_mode, mirror_style, x_pan, y_pan, mirroring_max_step_fraction, disable_hr):
         self.mirror_mode = mirror_mode
         self.mirror_style = mirror_style
-        self.mirroring_max_step_fraction = mirroring_max_step_fraction
+        self.mirroring_fractions = np.fromstring(mirroring_fractions, dtype=float, sep=',')
         self.x_pan = x_pan
         self.y_pan = y_pan
 
