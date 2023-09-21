@@ -4,6 +4,7 @@ import gradio as gr
 from modules.script_callbacks import on_cfg_denoiser
 from modules import processing
 from torchvision import transforms
+import numpy as np
 
 class Script(scripts.Script):
 
