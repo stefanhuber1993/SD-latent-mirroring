@@ -47,7 +47,7 @@ class Script(scripts.Script):
 
         #if params.sampling_step >= params.total_sampling_steps * self.mirroring_max_step_fraction:
          #   return
-        mirroring_its = np.round(self.mirroring_fractions).astype(int)
+        mirroring_its = np.round(self.mirroring_fractions * params.total_sampling_steps).astype(int)
         if params.sampling_step not in mirroring_its:
             return
 
@@ -103,10 +103,9 @@ class Script(scripts.Script):
                 elif self.mirror_style == 3:
                     height, width = input_image.size(2), input_image.size(3)
                     top_left = input_image[:, :, :height // 2, :width // 2]
-                    rotated_top_left = torch.rot90(top_left, k=1, dims=(2, 3))
-                    top_right = torch.flip(rotated_top_left, [2])  # Flip horizontally
-                    bottom_left = torch.flip(rotated_top_left, [3])  # Flip vertically
-                    bottom_right = torch.flip(bottom_left, [2])  # Flip horizontally
+                    top_right = torch.rot90(top_left, k=1, dims=(2, 3))
+                    bottom_right = torch.rot90(top_left, k=2, dims=(2, 3))  # Flip horizontally
+                    bottom_left = torch.rot90(top_left, k=3, dims=(2, 3))  # Flip vertically
                     top_half = torch.cat((rotated_top_left, top_right), dim=3)
                     bottom_half = torch.cat((bottom_left, bottom_right), dim=3)
                     params.x[:, :, :, :] = torch.cat((top_half, bottom_half), dim=2)
