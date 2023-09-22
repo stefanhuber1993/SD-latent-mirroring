@@ -118,7 +118,10 @@ class Script(scripts.Script):
                     rotated_top_half = torch.flip(top_half, [2, 3])  # Flip both vertically and horizontally
                     params.x[:, :, :, :] = torch.cat((rotated_top_half, input_image[:, :, height // 2:, :]), dim=2)
                 elif self.mirror_style == 5:
-                    params.x[:, :, :, :] = (torch.roll(params.x, shifts=1, dims=[1]) + params.x)/2
+                    height, width = input_image.size(2), input_image.size(3)
+                    top_half = input_image[:, :, :height // 2, :]
+                    mirrored_top_half = torch.flip(top_half, [3])
+                    params.x[:, :, :, :] = torch.cat((top_half, mirrored_top_half), dim=2)
                     
         except RuntimeError as e:
             if self.mirror_style in (3, 4):
